@@ -1,0 +1,88 @@
+version: '2'
+networks:
+  thyc_dns:
+    driver: bridge
+
+services:
+  etcd_1:
+    image: ${ETCD_IMAGE_NAME}
+    container_name: etcd_1
+    environment:
+    - ETCDCTL_API=${ETCD_API_VERSION}
+    #- TZ=CST-8
+    #- LANG=zh_CN.UTF-8
+    command:
+    - "/usr/local/bin/etcd"
+    - "--name"
+    - "etcd_1"
+    - "--data-dir"
+    - "/etcd-data"
+    - "--advertise-client-urls"
+    - "http://0.0.0.0:2379"
+    - "--listen-client-urls"
+    - "http://0.0.0.0:2379"
+    - "--listen-peer-urls"
+    - "http://0.0.0.0:2380"
+    - "--initial-advertise-peer-urls"
+    - "http://0.0.0.0:2380"
+    - "--initial-cluster-token"
+    - "etcd-cluster"
+    - "--initial-cluster"
+    - "etcd_1=http://0.0.0.0:2380"
+    - "--initial-cluster-state"
+    - "new"
+    volumes:
+    - ${ETCD_NODE_1_DATA_DIR}:/etcd-data:rw
+    #- ${ETCD_NODE_1_CONFIG_DIR}:/etc/etcd/etcd.conf:ro
+    ports:
+    - 2379:2379
+    - 2380:2380
+    networks:
+    - thyc_dns
+
+#  etcd_2:
+#    image: ${ETCD_IMAGE_NAME}
+#    container_name: etcd_2
+#    environment:
+#    - ETCDCTL_API=${ETCD_API_VERSION}
+#    #- TZ=CST-8
+#    #- LANG=zh_CN.UTF-8
+#    command: etcd -name etcd_2 \
+#      -advertise-client-urls http://0.0.0.0:2379 \
+#      -listen-client-urls http://0.0.0.0:2379 \
+#      -listen-peer-urls http://0.0.0.0:2380 \
+#      -initial-cluster-token etcd-cluster \
+#      -initial-cluster "etcd_1=http://${ETCD_NODE_1_IP_ADDR}:2380,etcd_2=http://${ETCD_NODE_2_IP_ADDR}:2480,etcd_3=http://${ETCD_NODE_3_IP_ADDR}:2580" \
+#      -initial-cluster-state new
+#    volumes:
+#    - ${ETCD_NODE_2_DATA_DIR}:/etcd-data:rw
+#    #- ${ETCD_NODE_2_CONFIG_DIR}:/etc/etcd/etcd.conf:ro
+#    ports:
+#    - 2479:2379
+#    - 2480:2380
+#    networks:
+#    - thyc_dns
+#
+#  etcd_3:
+#    image: ${ETCD_IMAGE_NAME}
+#    container_name: etcd_3
+#    environment:
+#    - ETCDCTL_API=${ETCD_API_VERSION}
+#    #- TZ=CST-8
+#    #- LANG=zh_CN.UTF-8
+#    command:
+#      etcd -name etcd_3 \
+#      -advertise-client-urls http://0.0.0.0:2379 \
+#      -listen-client-urls http://0.0.0.0:2379 \
+#      -listen-peer-urls http://0.0.0.0:2380 \
+#      -initial-cluster-token etcd-cluster \
+#      -initial-cluster "etcd_1=http://${ETCD_NODE_1_IP_ADDR}:2380,etcd_2=http://${ETCD_NODE_2_IP_ADDR}:2480,etcd_3=http://${ETCD_NODE_3_IP_ADDR}:2580" \
+#      -initial-cluster-state new
+#    volumes:
+#    - ${ETCD_NODE_3_DATA_DIR}:/etcd-data:rw
+#    #- ${ETCD_NODE_3_CONFIG_DIR}:/etc/etcd/etcd.conf:ro
+#    ports:
+#    - 2579:2379
+#    - 2580:2380
+#    networks:
+#    - thyc_dns

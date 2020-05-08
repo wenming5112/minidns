@@ -11,17 +11,20 @@ import io.grpc.netty.GrpcSslContexts;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * etcd 链接和操作工具，包括启动监听 操作etcd v3 版本协议，此操作不支持v2 版本协议。
- * v2版本的协议可以参考 https://www.cnblogs.com/laoqing/p/8967549.html
- */
-
-public class EtcdUtil {
+ * @author wzm
+ * @version 1.0.0
+ * @date 2020/5/8 16:53
+ **/
+public class EtcdClient {
+    private List<EtcdCluster> etcdClusters;
+    private String certPath;
     /**
      * ETCD客户端
      */
@@ -29,7 +32,7 @@ public class EtcdUtil {
     /**
      * 字符编码
      */
-    private static Charset charset = Charset.forName("UTF-8");
+    private static Charset charset = StandardCharsets.UTF_8;
     /**
      * 缓存时间
      */
@@ -39,53 +42,58 @@ public class EtcdUtil {
      */
     private static final String DNS_NAME = "coredns";
 
-    private static EtcdUtil etcdUtil = new EtcdUtil();
+    public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls) {
+        for (EtcdCluster etcd : etcdClusters) {
+            etcd.setTls(tls);
+            etcd.refreshEndpoint();
+        }
+        this.etcdClusters = etcdClusters;
+        initClient();
+    }
 
-    public static void main(String[] args) {
-        String etcdIp = "192.168.2.155";
-        String etcdPort = "2379";
-        String etcdCerPath = "/etcd/ssl/cert/ca.pem";
+    public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls, String certPath) {
+        for (EtcdCluster etcd : etcdClusters) {
+            etcd.setTls(tls);
+            etcd.refreshEndpoint();
+        }
+        this.etcdClusters = etcdClusters;
+        this.certPath = certPath;
+        initClientWithTls();
+    }
 
-        String ip = "192.168.2.183";
-        String domain = "www.myname2.com";
-        String differ = "";
-        // create client
-        EtcdUtil.initClientWithTls(etcdIp, etcdPort, etcdCerPath);
-        // put the key-value
-        System.out.println("执行新增：" + put(domain, ip, differ));
-        // get the CompletableFuture
-        System.out.println("查询结果：" + get(domain, differ));
-        // delete the key
-        System.out.println("执行删除：" + delete(domain, differ));
+    public void close(){
         client.close();
     }
 
     /**
-     * 初始化ETCD客户端
+     * 初始化ETCD客户端，支持集群
      *
-     * @param ip   IP
-     * @param port 端口
      * @author wzm
      * @date 2019/11/1 10:19
      */
-    public static void initClient(String ip, String port) {
-        client = Client.builder().endpoints(getLocation(ip, port, false)).build();
+    private void initClient() {
+        String[] endpoints = new String[etcdClusters.size()];
+        for (int i = 0; i < etcdClusters.size(); i++) {
+            endpoints[i] = etcdClusters.get(i).getEndpoint();
+        }
+        client = Client.builder().endpoints(endpoints).build();
     }
 
     /**
-     * 初始化ETCD客户端（TLS）
+     * 初始化ETCD客户端（TLS），支持集群
      *
-     * @param ip       IP
-     * @param port     端口
-     * @param certPath 证书路径
      * @author wzm
      * @date 2019/11/1 10:20
      */
-    public static void initClientWithTls(String ip, String port, String certPath) {
-        try (InputStream is = etcdUtil.getClass().getResourceAsStream(certPath)) {
+    private void initClientWithTls() {
+        String[] endpoints = new String[etcdClusters.size()];
+        for (int i = 0; i < etcdClusters.size(); i++) {
+            endpoints[i] = etcdClusters.get(i).getEndpoint();
+        }
+        try (InputStream is = this.getClass().getResourceAsStream(certPath)) {
             //还需要设置证书路径
             client = Client.builder()
-                    .endpoints(getLocation(ip, port, true))
+                    .endpoints(endpoints)
                     .sslContext(
                             GrpcSslContexts
                                     .forClient()
@@ -106,7 +114,7 @@ public class EtcdUtil {
      * @author wzm
      * @date 2019/11/1 9:45
      */
-    public static boolean put(String key, String value, String difference) {
+    public boolean put(String key, String value, String difference) {
         try {
             KV kv = client.getKVClient();
             ByteSequence k = ByteSequence.from(formatKey(key, difference), charset);
@@ -128,7 +136,7 @@ public class EtcdUtil {
      * @author wzm
      * @date 2019/11/1 10:02
      */
-    public static Map<String, String> get(String key, String difference) {
+    public Map<String, String> get(String key, String difference) {
         try {
             Map<String, String> map = new HashMap<>(1);
             KV kvClient = client.getKVClient();
@@ -155,7 +163,7 @@ public class EtcdUtil {
      * @author wzm
      * @date 2019/11/1 10:17
      */
-    public static boolean delete(String key, String difference) {
+    public boolean delete(String key, String difference) {
         try {
             KV kvClient = client.getKVClient();
             CompletableFuture<GetResponse> getFeature = kvClient.get(ByteSequence.from(formatKey(key, difference), charset));
@@ -193,24 +201,6 @@ public class EtcdUtil {
         return kv.getValue().toString(charset);
     }
 
-    /**
-     * 获取地址
-     *
-     * @param ip   ip
-     * @param port duank
-     * @param tls  是否开启tls
-     * @return java.lang.String
-     * @author wzm
-     * @date 2019/11/1 10:00
-     */
-    private static String getLocation(String ip, String port, Boolean tls) {
-        String http = "http://";
-        String https = "https://";
-        if (!tls) {
-            return http + ip + ":" + port;
-        }
-        return https + ip + ":" + port;
-    }
 
     private static String formatKey(String domainName, String difference) {
         String[] strings = domainName.split("\\.");
