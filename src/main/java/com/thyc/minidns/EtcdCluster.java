@@ -1,6 +1,8 @@
 package com.thyc.minidns;
 
 /**
+ * etcd node
+ *
  * @author wzm
  * @version 1.0.0
  * @date 2020/5/8 17:21
@@ -14,7 +16,6 @@ public class EtcdCluster {
     public EtcdCluster(String ip, Integer port) {
         this.ip = ip;
         this.port = port;
-        this.endpoint = generateFormattedEndpoint(ip, port, tls);
     }
 
     protected void setTls(Boolean tls) {
@@ -25,16 +26,13 @@ public class EtcdCluster {
         return endpoint;
     }
 
-    public void refreshEndpoint() {
-        this.endpoint = generateFormattedEndpoint(ip, port, tls);
-    }
-
-    private String generateFormattedEndpoint(String ip, Integer port, Boolean tls) {
+    protected void generateFormattedEndpoint() {
         String http = "http://";
         String https = "https://";
         if (tls) {
-            return https + ip + ":" + port.toString();
+            this.endpoint = https + ip + ":" + port.toString();
+        }else {
+            this.endpoint = http + ip + ":" + port.toString();
         }
-        return http + ip + ":" + port.toString();
     }
 }

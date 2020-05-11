@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * etcd 客户端
+ *
  * @author wzm
  * @version 1.0.0
  * @date 2020/5/8 16:53
@@ -38,14 +40,14 @@ public class EtcdClient {
      */
     private static final Integer TTL = 600;
     /**
-     * DNS名
+     * DNS name
      */
     private static final String DNS_NAME = "coredns";
 
     public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls) {
         for (EtcdCluster etcd : etcdClusters) {
             etcd.setTls(tls);
-            etcd.refreshEndpoint();
+            etcd.generateFormattedEndpoint();
         }
         this.etcdClusters = etcdClusters;
         initClient();
@@ -54,14 +56,14 @@ public class EtcdClient {
     public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls, String certPath) {
         for (EtcdCluster etcd : etcdClusters) {
             etcd.setTls(tls);
-            etcd.refreshEndpoint();
+            etcd.generateFormattedEndpoint();
         }
         this.etcdClusters = etcdClusters;
         this.certPath = certPath;
         initClientWithTls();
     }
 
-    public void close(){
+    public void close() {
         client.close();
     }
 
@@ -90,7 +92,7 @@ public class EtcdClient {
         for (int i = 0; i < etcdClusters.size(); i++) {
             endpoints[i] = etcdClusters.get(i).getEndpoint();
         }
-        try (InputStream is = this.getClass().getResourceAsStream(certPath)) {
+        try (InputStream is = getClass().getResourceAsStream(certPath)) {
             //还需要设置证书路径
             client = Client.builder()
                     .endpoints(endpoints)
@@ -123,6 +125,8 @@ public class EtcdClient {
             kv.put(k, v).join();
             return kv.get(k).join().getCount() == 1;
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
