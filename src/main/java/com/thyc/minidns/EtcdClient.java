@@ -116,7 +116,7 @@ public class EtcdClient {
      * @author wzm
      * @date 2019/11/1 9:45
      */
-    public boolean put(String key, String value, String difference) {
+    public boolean putRecord(String key, String value, String difference) {
         try {
             KV kv = client.getKVClient();
             ByteSequence k = ByteSequence.from(formatKey(key, difference), charset);
@@ -140,7 +140,7 @@ public class EtcdClient {
      * @author wzm
      * @date 2019/11/1 10:02
      */
-    public Map<String, String> get(String key, String difference) {
+    public Map<String, String> getRecord(String key, String difference) {
         try {
             Map<String, String> map = new HashMap<>(1);
             KV kvClient = client.getKVClient();
@@ -167,7 +167,7 @@ public class EtcdClient {
      * @author wzm
      * @date 2019/11/1 10:17
      */
-    public boolean delete(String key, String difference) {
+    public boolean deleteRecord(String key, String difference) {
         try {
             KV kvClient = client.getKVClient();
             CompletableFuture<GetResponse> getFeature = kvClient.get(ByteSequence.from(formatKey(key, difference), charset));

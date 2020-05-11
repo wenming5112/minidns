@@ -27,9 +27,9 @@ public class EtcdClientTest {
         String ip = "192.168.1.120";
         String domain = "www.mytest.com";
         String differ = "";
-        System.out.println(etcdClient.put(domain, ip, differ));
-        System.out.println(etcdClient.get(domain, differ));
-        System.out.println(etcdClient.delete(domain, differ));
+        System.out.println(etcdClient.putRecord(domain, ip, differ));
+        System.out.println(etcdClient.getRecord(domain, differ));
+        System.out.println(etcdClient.deleteRecord(domain, differ));
         etcdClient.close();
     }
 
@@ -46,9 +46,9 @@ public class EtcdClientTest {
         String ip = "192.168.1.183";
         String domain = "www.test.com";
         String differ = "";
-        System.out.println(etcdClient.put(domain, ip, differ));
-        System.out.println(etcdClient.get(domain, differ));
-        System.out.println(etcdClient.delete(domain, differ));
+        System.out.println(etcdClient.putRecord(domain, ip, differ));
+        System.out.println(etcdClient.getRecord(domain, differ));
+        System.out.println(etcdClient.deleteRecord(domain, differ));
         etcdClient.close();
     }
 
