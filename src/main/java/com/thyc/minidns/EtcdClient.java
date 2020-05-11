@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * etcd 客户端
+ * etcd Client
  *
  * @author wzm
  * @version 1.0.0
@@ -28,15 +28,15 @@ public class EtcdClient {
     private List<EtcdCluster> etcdClusters;
     private String certPath;
     /**
-     * ETCD客户端
+     * etcd Client
      */
     private static Client client;
     /**
-     * 字符编码
+     * Charset
      */
     private static Charset charset = StandardCharsets.UTF_8;
     /**
-     * 缓存时间
+     * Cache time
      */
     private static final Integer TTL = 600;
     /**
@@ -44,18 +44,18 @@ public class EtcdClient {
      */
     private static final String DNS_NAME = "coredns";
 
-    public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls) {
+    public EtcdClient(List<EtcdCluster> etcdClusters) {
         for (EtcdCluster etcd : etcdClusters) {
-            etcd.setTls(tls);
+            etcd.setTls(false);
             etcd.generateFormattedEndpoint();
         }
         this.etcdClusters = etcdClusters;
         initClient();
     }
 
-    public EtcdClient(List<EtcdCluster> etcdClusters, Boolean tls, String certPath) {
+    public EtcdClient(List<EtcdCluster> etcdClusters, String certPath) {
         for (EtcdCluster etcd : etcdClusters) {
-            etcd.setTls(tls);
+            etcd.setTls(true);
             etcd.generateFormattedEndpoint();
         }
         this.etcdClusters = etcdClusters;
@@ -68,7 +68,7 @@ public class EtcdClient {
     }
 
     /**
-     * 初始化ETCD客户端，支持集群
+     * Initialize the etcd client to support clustering
      *
      * @author wzm
      * @date 2019/11/1 10:19
@@ -82,7 +82,7 @@ public class EtcdClient {
     }
 
     /**
-     * 初始化ETCD客户端（TLS），支持集群
+     * Initialize the etcd client (TLS) to support clustering
      *
      * @author wzm
      * @date 2019/11/1 10:20
@@ -108,7 +108,7 @@ public class EtcdClient {
     }
 
     /**
-     * 新增/修改
+     * New/modified
      *
      * @param key        域名
      * @param value      ip
@@ -132,10 +132,10 @@ public class EtcdClient {
     }
 
     /**
-     * 查询
+     * query
      *
-     * @param key        键
-     * @param difference 区别（同一个域名可能对应多个ip）
+     * @param key        key
+     * @param difference differ（The same domain name may correspond to more than one IP）
      * @return java.util.Map
      * @author wzm
      * @date 2019/11/1 10:02
@@ -160,10 +160,10 @@ public class EtcdClient {
     }
 
     /**
-     * 删除
+     * delete
      *
-     * @param key        域名
-     * @param difference 区别
+     * @param key        dns name
+     * @param difference differ
      * @author wzm
      * @date 2019/11/1 10:17
      */
@@ -182,9 +182,9 @@ public class EtcdClient {
     }
 
     /**
-     * 从kv中获取键
+     * Get the key from kv
      *
-     * @param kv 键值对象
+     * @param kv kv
      * @return java.lang.String
      * @author wzm
      * @date 2019/11/1 9:59
@@ -194,9 +194,9 @@ public class EtcdClient {
     }
 
     /**
-     * 从kv中获取值
+     * Get the value from kv
      *
-     * @param kv 键值对象
+     * @param kv kv
      * @return java.lang.String
      * @author wzm
      * @date 2019/11/1 9:59
