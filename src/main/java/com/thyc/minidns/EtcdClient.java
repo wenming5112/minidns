@@ -227,4 +227,14 @@ public class EtcdClient {
         jsonObject.addProperty("ttl", ttl);
         return jsonObject.toString();
     }
+    //A记录
+    //etcdctl put /coredns/com/leffss/www '{"host":"1.1.1.1","ttl":10}'
+    //AAAA记录
+    //etcdctl put /coredns/com/leffss/www '{"host":"1002::4:2","ttl":10}'
+    //CNAME记录
+    //etcdctl put /coredns/com/leffss/www '{"host":"www.baidu.com","ttl":10}'
+    //SRV记录
+    //etcdctl put /coredns/com/leffss/www '{"host":"www.baidu.com","port":80,"ttl":10}'
+    //TXT记录
+    //etcdctl put /coredns/com/leffss/www '{"text":"This is text!","ttl":10}'
 }
